@@ -158,7 +158,7 @@ public class CascadeClassifier {
     }
 
     //javadoc: CascadeClassifier::detectMultiScale(image, objects)
-    public void detectMultiScale(Mat image, MatOfRect objects) {
+    public void detectMultiScale(Mat image, MatOfRect objects, double v, int i, int i1) {
         Mat objects_mat = objects;
         detectMultiScale_1(nativeObj, image.nativeObj, objects_mat.nativeObj);
 

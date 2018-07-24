@@ -1573,18 +1573,6 @@ public class Imgproc {
         return;
     }
 
-    //javadoc: calcHist(images, channels, mask, hist, histSize, ranges)
-    public static void calcHist(List<Mat> images, MatOfInt channels, Mat mask, Mat hist, MatOfInt histSize, MatOfFloat ranges) {
-        Mat images_mat = Converters.vector_Mat_to_Mat(images);
-        Mat channels_mat = channels;
-        Mat histSize_mat = histSize;
-        Mat ranges_mat = ranges;
-        calcHist_1(images_mat.nativeObj, channels_mat.nativeObj, mask.nativeObj, hist.nativeObj, histSize_mat.nativeObj, ranges_mat.nativeObj);
-
-        return;
-    }
-
-
     //
     // C++:  void circle(Mat& img, Point center, int radius, Scalar color, int thickness = 1, int lineType = LINE_8, int shift = 0)
     //
