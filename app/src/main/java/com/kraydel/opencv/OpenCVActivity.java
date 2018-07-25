@@ -147,9 +147,9 @@ public class OpenCVActivity extends Activity
         }
         */
         // Create a grayscale image
-        /*
         Imgproc.cvtColor(aInputFrame, grayscaleImage, Imgproc.COLOR_RGB2GRAY);
 
+        /*
         if(firstFrame)
         {
             firstFrame = false;
@@ -169,9 +169,10 @@ public class OpenCVActivity extends Activity
             Imgproc.drawContours(aInputFrame, contours, -1, new Scalar(255, 0, 0), 5);
         }
         previousFrame = grayscaleImage.clone();
-
-        // Core.flip(aInputFrame, grayscaleImage.t(), 1);
         */
+
+        Core.flip(aInputFrame, grayscaleImage.t(), 1);
+        
         MatOfRect objects = new MatOfRect();
 
         // Use the classifier to detect objects
