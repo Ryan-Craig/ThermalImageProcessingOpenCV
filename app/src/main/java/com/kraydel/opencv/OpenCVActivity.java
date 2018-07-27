@@ -33,7 +33,7 @@ public class OpenCVActivity extends Activity
         implements CvCameraViewListener {
 
     private CameraBridgeViewBase openCvCameraView;
-    private CascadeClassifier cascadeClassifier;
+    private CascadeClassifier eyeCascadeClassifier,faceCascadeClassifier;
     private Mat grayscaleImage;
     private int absoluteFaceSize;
     private Boolean firstFrame = true;
@@ -56,14 +56,41 @@ public class OpenCVActivity extends Activity
     private void initializeOpenCVDependencies() {
 
         try {
+            String fileName = "haarcascade_eye.xml";
+            // Copy the resource into a temp file so OpenCV can load it
+            Log.d("OpenCVActivity", "Initialising dependencies"); //Debug log message
+            InputStream is = getResources().getAssets().open(fileName);
+            File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
+            Log.d("OpenCVActivity", "cascadeDir " + cascadeDir); //Debug log message
+            File mEyeCascadeFile = new File(cascadeDir, fileName);
+            FileOutputStream os = new FileOutputStream(mEyeCascadeFile); // writes to the mEyeCascadeFile
+
+
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = is.read(buffer)) != -1) {
+                os.write(buffer, 0, bytesRead); //Writes from is to os
+            }
+            is.close();
+            os.close();
+            //From here mEyeCascadeFile is used
+
+            // Load the cascade classifier
+            eyeCascadeClassifier = new CascadeClassifier(mEyeCascadeFile.getAbsolutePath());
+            Log.d("OpenCVActivity", "eyeCascadeClassifier " + eyeCascadeClassifier.toString());
+        } catch (Exception e) {
+            Log.e("OpenCVActivity", "Error loading cascade", e);
+        }
+
+        try {
             String fileName = "lbpcascade_frontalface.xml";
             // Copy the resource into a temp file so OpenCV can load it
             Log.d("OpenCVActivity", "Initialising dependencies");
             InputStream is = getResources().getAssets().open(fileName);
             File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
             Log.d("OpenCVActivity", "cascadeDir " + cascadeDir);
-            File mCascadeFile = new File(cascadeDir, fileName);
-            FileOutputStream os = new FileOutputStream(mCascadeFile);
+            File mFaceCascadeFile = new File(cascadeDir, fileName);
+            FileOutputStream os = new FileOutputStream(mFaceCascadeFile);
 
 
             byte[] buffer = new byte[4096];
@@ -76,8 +103,8 @@ public class OpenCVActivity extends Activity
 
 
             // Load the cascade classifier
-            cascadeClassifier = new CascadeClassifier(mCascadeFile.getAbsolutePath());
-            Log.d("OpenCVActivity", "cascadeClassifier " + cascadeClassifier.toString());
+            faceCascadeClassifier = new CascadeClassifier(mFaceCascadeFile.getAbsolutePath());
+            Log.d("OpenCVActivity", "faceCascadeClassifier " + faceCascadeClassifier.toString());
         } catch (Exception e) {
             Log.e("OpenCVActivity", "Error loading cascade", e);
         }
@@ -92,14 +119,14 @@ public class OpenCVActivity extends Activity
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        openCvCameraView = new JavaCameraView(this, -1);
+        openCvCameraView = new JavaCameraView(this, 98); //98 Front camera, 99 Back camera
         setContentView(openCvCameraView);
         openCvCameraView.setCvCameraViewListener(this);
     }
 
     @Override
     public void onCameraViewStarted(int width, int height) {
-        grayscaleImage = new Mat(height, width, CvType.CV_8UC4);
+        grayscaleImage = new Mat(height, width, CV_8UC1);
         // The faces will be a 20% of the height of the screen
         absoluteFaceSize = (int) (height * 0.2);
     }
@@ -172,20 +199,10 @@ public class OpenCVActivity extends Activity
         */
 
         Core.flip(aInputFrame, grayscaleImage.t(), 1);
-        
-        MatOfRect objects = new MatOfRect();
 
-        // Use the classifier to detect objects
-        if (cascadeClassifier != null) {
-            cascadeClassifier.detectMultiScale(grayscaleImage, objects, 1.1, 4, 2,
-                    new Size(absoluteFaceSize, absoluteFaceSize), new Size());
-        }
+        detectObjects(aInputFrame, eyeCascadeClassifier, new Scalar(0, 255, 0, 255));
 
-        // If there are any objects found, draw a rectangle around it
-        Rect[] objectArray = objects.toArray();
-        for (Rect anObjectArray : objectArray) {
-            Imgproc.rectangle(aInputFrame, anObjectArray.tl(), anObjectArray.br(), new Scalar(0, 255, 0, 255), 3);
-        }
+        detectObjects(aInputFrame, faceCascadeClassifier, new Scalar(128,0,128, 255));
 
         /*
         Mat histogram = new Mat();
@@ -197,6 +214,25 @@ public class OpenCVActivity extends Activity
         Imgproc.putText(aInputFrame, "Hello World!", new Point(400, 400), Core.FONT_HERSHEY_SIMPLEX, 1, new Scalar(0, 0, 0), 5);
         */
         return aInputFrame;
+    }
+
+    //Passes in the current image from the camera, and a CascadeClassifier (Which will detect a certain pattern passed in using the xml file)
+    public void detectObjects(Mat aInputFrame, CascadeClassifier cascadeClassifier ,Scalar colour){
+        MatOfRect objects = new MatOfRect();
+
+        // Use the classifier to detect objects
+        //Returns detected objects in objects array
+        if (cascadeClassifier != null) {
+            cascadeClassifier.detectMultiScale(grayscaleImage, objects, 1.1, 4, 2,
+                    new Size(absoluteFaceSize, absoluteFaceSize), new Size());
+        }
+
+        // If there are any objects found, draw a rectangle around it
+        Rect[] faceArray = objects.toArray();
+        for (Rect anObjectArray : faceArray) {
+            Imgproc.rectangle(aInputFrame, anObjectArray.tl(), anObjectArray.br(), colour, 3);
+            //Draws a rectangle based off the array of Rects given in the objects array
+        }
     }
 
     @Override
