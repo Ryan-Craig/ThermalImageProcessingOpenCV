@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/OpenCVTest.iml" filepath="$PROJECT_DIR$/OpenCVTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ThermalImageProcessingOpenCV.iml" filepath="$PROJECT_DIR$/ThermalImageProcessingOpenCV.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/openCVLibrary341/openCVLibrary341.iml" filepath="$PROJECT_DIR$/openCVLibrary341/openCVLibrary341.iml" />
     </modules>
